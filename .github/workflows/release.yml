@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: EvenUp-${{ matrix.os }}
-          path: target/scala-3.7.3/*.jar
+          path: target/scala-3.7.3/EvenUp.jar
 
   release:
     needs: build
@@ -48,18 +48,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
 
+      - name: List downloaded files (debug)
+        run: |
+          echo "Contents of artifacts directory:"
+          ls -R artifacts/
+
+      - name: Rename artifacts
+        run: |
+          mkdir -p release-files
+          cp artifacts/EvenUp-ubuntu-latest/EvenUp.jar release-files/EvenUp-linux.jar
+          cp artifacts/EvenUp-macos-latest/EvenUp.jar release-files/EvenUp-macos.jar
+          cp artifacts/EvenUp-windows-latest/EvenUp.jar release-files/EvenUp-windows.jar
+          ls -la release-files/
+
       - name: Create release and upload assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref_name }}
         run: |
-          gh release create "$tag" \
-            --repo="$GITHUB_REPOSITORY" \
-            --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+          gh release create "${{ github.ref_name }}" \
+            --repo="${{ github.repository }}" \
+            --title="${{ github.event.repository.name }} ${{ github.ref_name }}" \
             --generate-notes \
-            artifacts/**/*.jar
+            release-files/EvenUp-linux.jar \
+            release-files/EvenUp-macos.jar \
+            release-files/EvenUp-windows.jar
