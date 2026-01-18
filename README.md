@@ -117,8 +117,6 @@ If you just want to run EvenUp directly without Docker or X server setup:
    java -jar EvenUp.jar
    ```
 
-Works on **Windows**.
-
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Run with Docker
