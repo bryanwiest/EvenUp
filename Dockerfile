@@ -8,6 +8,8 @@ RUN apt update && apt install -y \
     libxtst6 \
     libxi6 \
     libgl1 \
+    libcanberra-gtk3-module \
+    packagekit-gtk3-module \
     xvfb \
     && rm -rf /var/lib/apt/lists/*
 
