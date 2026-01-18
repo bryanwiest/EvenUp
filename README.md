@@ -201,7 +201,7 @@ Installation (PowerShell)
    ```
 3. Remove old data
    ```sh
-   rm evenup_data.json evenup_data.xml
+   rm evenup_data.json, evenup_data.xml
    ```
 4. Start EvenUp
    ```sh
