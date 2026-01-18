@@ -113,9 +113,18 @@ If you just want to run EvenUp directly without Docker or X server setup:
 
 1. Download the newest release for your OS from the [release page](https://github.com/jonaskromer/EvenUp/releases)
 2. Start the application
-   ```sh
-   java -jar EvenUp.jar
-   ```
+  * MacOS
+    ```sh
+    java -jar EvenUp-macos.jar
+    ```
+  * Windows
+      ```sh
+      java -jar EvenUp-windows.jar
+      ```
+  * Linux
+      ```sh
+      java -jar EvenUp-linux.jar
+      ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
