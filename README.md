@@ -111,13 +111,11 @@ If you just want to run EvenUp directly without Docker or X server setup:
 
 ### Installation
 
-1. Download the newest release from the [release page](https://github.com/jonaskromer/EvenUp/releases)
+1. Download the newest release for your OS from the [release page](https://github.com/jonaskromer/EvenUp/releases)
 2. Start the application
    ```sh
    java -jar EvenUp.jar
    ```
-
-Works on **Linux**, **macOS**, and **Windows**.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -125,9 +123,13 @@ Works on **Linux**, **macOS**, and **Windows**.
 
 If you want to run EvenUp in a Docker container:
 
-### Prerequisites
+* <a href="#docker-macos">MacOS</a>
+* <a href="#docker-windows">Windows</a>
+* <a href="#docker-linux">Linux</a>
 
-Setup on MacOS
+<a id="docker-macos"></a>
+
+### Setup on MacOS
 * XQuartz Setup
   1. Install XQuartz via Homebrew
       ```sh
@@ -146,7 +148,28 @@ Setup on MacOS
       xhost + 127.0.0.1
       ```
 
-Setup on Windows
+Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/jonaskromer/EvenUp.git
+   ```
+2. Go to EvenUp directory
+   ```sh
+   cd EvenUp
+   ```
+3. Remove old data
+   ```sh
+   rm evenup_data.json evenup_data.xml
+   ```
+3. Start EvenUp
+   ```sh
+   docker compose up
+   ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<a id="docker-windows"></a>
+
+### Setup on Windows
 * VcXsrv Setup
   1. Install VcXsrv (Download via [VcXsrv Website](https://vcxsrv.com/))
   2. Configure VcXsrv
@@ -157,26 +180,51 @@ Setup on Windows
       * Select **Clipboard, Primary Selection and Native opengl** on Extra settings page, then press next.
       * Click on **Finish** button on Configuration complete page.
 
-
-### Installation
+Installation (PowerShell)
 
 1. Clone the repo
    ```sh
    git clone https://github.com/jonaskromer/EvenUp.git
    ```
-2. Build Docker Image
+2. Go to EvenUp directory
    ```sh
-   docker compose -f 'docker-compose.yaml' up -d --build 'evenup'
+   cd EvenUp
    ```
-3. Rerun the App
+3. Remove old data
    ```sh
-   docker start evenup-evenup-1
+   rm evenup_data.json evenup_data.xml
    ```
-4. For the TUI to work, attach any terminal to the container
+4. Start EvenUp
    ```sh
-   docker attach evenup-evenup-1
+   docker compose up
+   ```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+<a id="docker-linux"></a>
+
+### Setup on Linux
+* xhost Setup
+   ```sh
+   xhost +local:docker
    ```
 
+Installation
+
+1. Clone the repo
+   ```sh
+   git clone https://github.com/jonaskromer/EvenUp.git
+   ```
+2. Go to EvenUp directory
+   ```sh
+   cd EvenUp
+   ```
+3. Remove old data
+   ```sh
+   rm evenup_data.json evenup_data.xml
+   ```
+4. Start EvenUp
+   ```sh
+   sudo docker compose -f docker-compose.linux.yaml up
+   ```
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 

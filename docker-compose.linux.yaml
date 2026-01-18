@@ -1,0 +1,13 @@
+services:
+  evenup:
+    build: .
+    image: evenup:v1
+    stdin_open: true
+    tty: true
+    environment:
+      - DISPLAY=${DISPLAY}
+      - NO_AT_BRIDGE=1
+      - GTK_MODULES=
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    network_mode: "host"
