@@ -70,4 +70,9 @@ class DefaultSpec extends AnyWordSpec with Matchers:
       import Default.given
       val fileIO = summon[IFileIO]
       fileIO shouldBe a[IFileIO]
+
+    "provide IController given" in:
+      import Default.given
+      val controller = summon[IController]
+      controller shouldBe a[IController]
   }

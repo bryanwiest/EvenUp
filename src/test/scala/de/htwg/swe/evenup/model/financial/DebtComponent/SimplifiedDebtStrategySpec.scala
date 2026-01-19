@@ -162,4 +162,9 @@ class SimplifiedDebtStrategySpec extends AnyWordSpec with Matchers:
       val totalDebt = debts.map(_.amount).sum
       totalDebt shouldBe 150.0 +- 0.02
     }
+
+    "have correct string representation" in {
+      val strategy = SimplifiedDebtStrategy()
+      strategy.toString shouldBe "simplified"
+    }
   }
