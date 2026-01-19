@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: scoverage-report
-          path: target/scala-3.7.3/scoverage-report
+          path: target/scala-3.7.4/scoverage-report
 
   sonar_scan:
     name: SonarCloud Scan
@@ -82,7 +82,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: scoverage-report
-          path: target/scala-3.7.3/scoverage-report
+          path: target/scala-3.7.4/scoverage-report
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6
