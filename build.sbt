@@ -1,15 +1,10 @@
-val scala3Version = "3.7.3"
-
-val javafxVersion = "25"
-val javafxModules = Seq("base", "controls", "fxml", "graphics", "media", "swing", "web")
-
 lazy val root = project
   .in(file("."))
   .settings(
     name := "EvenUp",
-    version := "0.1.0-SNAPSHOT",
+    version := "1.0.0",
 
-    scalaVersion := scala3Version,
+    scalaVersion := "3.7.4",
 
     scalacOptions += "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s",
     coverageExcludedPackages := "de\\.htwg\\.swe\\.evenup\\.EvenUp.*;de\\.htwg\\.swe\\.evenup\\.view\\.gui\\..*;de\\.htwg\\.swe\\.evenup\\.view\\.tui\\.Tui.*",
