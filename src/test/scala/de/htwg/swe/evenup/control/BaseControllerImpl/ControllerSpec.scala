@@ -156,9 +156,8 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.addExpenseToGroup("Dinner", "NonExistentUser", 50.0, date, None)
 
       observer.lastEvent.get match
-        case EventResponse.AddExpenseToGroup(result, _) => 
-          result shouldBe AddExpenseToGroupResult.PaidByNotFound
-        case _ => fail("Expected AddExpenseToGroup response")
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.PaidByNotFound
+        case _                                          => fail("Expected AddExpenseToGroup response")
 
     "fail to add expense with invalid amount" in:
       val controller = createController()
@@ -169,9 +168,8 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.addExpenseToGroup("Dinner", "Bryan", 0.0, date, None)
 
       observer.lastEvent.get match
-        case EventResponse.AddExpenseToGroup(result, _) => 
-          result shouldBe AddExpenseToGroupResult.InvalidAmount
-        case _ => fail("Expected AddExpenseToGroup response")
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.InvalidAmount
+        case _                                          => fail("Expected AddExpenseToGroup response")
 
     "fail to add expense with negative amount" in:
       val controller = createController()
@@ -182,9 +180,8 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.addExpenseToGroup("Dinner", "Bryan", -10.0, date, None)
 
       observer.lastEvent.get match
-        case EventResponse.AddExpenseToGroup(result, _) => 
-          result shouldBe AddExpenseToGroupResult.InvalidAmount
-        case _ => fail("Expected AddExpenseToGroup response")
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.InvalidAmount
+        case _                                          => fail("Expected AddExpenseToGroup response")
 
     "fail to add expense with shares person not in group" in:
       val controller = createController()
@@ -195,9 +192,8 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.addExpenseToGroup("Dinner", "Bryan", 50.0, date, Some("NonExistent:50"))
 
       observer.lastEvent.get match
-        case EventResponse.AddExpenseToGroup(result, _) => 
-          result shouldBe AddExpenseToGroupResult.SharesPersonNotFound
-        case _ => fail("Expected AddExpenseToGroup response")
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.SharesPersonNotFound
+        case _                                          => fail("Expected AddExpenseToGroup response")
 
     "fail to add expense with shares sum mismatch" in:
       val controller = createController()
@@ -208,8 +204,7 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.addExpenseToGroup("Dinner", "Bryan", 50.0, date, Some("Bryan:30_Jonas:10"))
 
       observer.lastEvent.get match
-        case EventResponse.AddExpenseToGroup(result, _) => 
-          result shouldBe AddExpenseToGroupResult.SharesSumWrong
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.SharesSumWrong
         case other => fail(s"Expected AddExpenseToGroup with SharesSumWrong, got: $other")
 
     "set debt strategy" in:
