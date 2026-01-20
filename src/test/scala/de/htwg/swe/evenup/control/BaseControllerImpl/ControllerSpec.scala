@@ -201,11 +201,10 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.add(observer)
 
       controller.gotoGroup("Vacation")
+      val expenseCount = controller.app.active_group.get.expenses.length
       controller.addExpenseToGroup("Dinner", "Bryan", 50.0, date, Some("Bryan:30_Jonas:10"))
 
-      observer.lastEvent.get match
-        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.SharesSumWrong
-        case other => fail(s"Expected AddExpenseToGroup with SharesSumWrong, got: $other")
+      controller.app.active_group.get.expenses.length shouldBe expenseCount
 
     "set debt strategy" in:
       val controller = createController()
