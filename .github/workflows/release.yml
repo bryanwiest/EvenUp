@@ -39,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: EvenUp-${{ matrix.os }}
-          path: target/scala-3.7.3/EvenUp.jar
+          path: target/scala-3.7.4/EvenUp.jar
 
   release:
     needs: build
