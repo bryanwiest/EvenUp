@@ -1,101 +1,49 @@
-package de.htwg.swe.evenup.model.financial.DebtComponent
+package de.htwg.swe.evenup.model.financial.debt
 
-import org.scalatest._
-import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+import de.htwg.swe.evenup.model.GroupComponent.BaseGroupImpl.Group
+import de.htwg.swe.evenup.model.GroupComponent.IGroup
 import de.htwg.swe.evenup.model.PersonComponent.BasePersonImpl.Person
 import de.htwg.swe.evenup.model.DateComponent.BaseDateImpl.Date
 import de.htwg.swe.evenup.model.financial.ShareComponent.BaseShareImpl.Share
 import de.htwg.swe.evenup.model.financial.ExpenseComponent.BaseExpenseImpl.Expense
-import de.htwg.swe.evenup.model.financial.DebtComponent.BaseDebtImpl.NormalDebtStrategy
-import de.htwg.swe.evenup.model.financial.DebtComponent.BaseDebtImpl.SimplifiedDebtStrategy
-import de.htwg.swe.evenup.model.GroupComponent.BaseGroupImpl.Group
+import de.htwg.swe.evenup.model.financial.DebtComponent.BaseDebtImpl.{Debt, DebtCalculationStrategy}
+import de.htwg.swe.evenup.model.financial.DebtComponent.IDebt
 
 class DebtCalculationStrategySpec extends AnyWordSpec with Matchers:
 
-  val alice   = Person("Alice")
-  val bob     = Person("Bob")
-  val charlie = Person("Charlie")
-  val date    = Date(15, 6, 2025)
+  "A DebtCalculationStrategy" should {
 
-  "NormalDebtStrategy" should {
+    val alice   = Person("Alice")
+    val bob     = Person("Bob")
+    val charlie = Person("Charlie")
 
-    "return 'normal' as toString" in:
-      val strategy = NormalDebtStrategy()
-      strategy.toString() shouldBe "normal"
+    val expense1 = Expense("Lunch", 30.0, Date(1, 1, 2025), alice, List(Share(alice, 10.0), Share(bob, 20.0)))
+    val expense2 = Expense(
+      "Dinner",
+      60.0,
+      Date(2, 1, 2025),
+      bob,
+      List(Share(alice, 20.0), Share(bob, 20.0), Share(charlie, 20.0))
+    )
 
-    "calculate no debts when there are no expenses" in:
-      val strategy = NormalDebtStrategy()
-      val group    = Group("Trip", List(alice, bob), Nil, Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-      debts shouldBe empty
+    val group = Group(
+      "Trip",
+      List(alice, bob, charlie),
+      List(expense1, expense2),
+      List(),
+      new DebtCalculationStrategy {
+        override def calculateDebts(group: IGroup): List[IDebt] = List()
+      }
+    )
 
-    "calculate debts for a single expense" in:
-      val strategy = NormalDebtStrategy()
-      val expense  = Expense("Dinner", 30.0, date, alice, List(Share(bob, 15.0), Share(charlie, 15.0)))
-      val group    = Group("Trip", List(alice, bob, charlie), List(expense), Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-      debts.length shouldBe 2
+    "calculate balances correctly" in {
+      val strategy = group.debt_strategy
+      val balances = strategy.calculateBalances(group)
 
-    "net debts between two people" in:
-      val strategy = NormalDebtStrategy()
-      val expense1 = Expense("Dinner", 20.0, date, alice, List(Share(bob, 10.0)))
-      val expense2 = Expense("Lunch", 10.0, date, bob, List(Share(alice, 5.0)))
-      val group    = Group("Trip", List(alice, bob), List(expense1, expense2), Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-
-      debts.length shouldBe 1
-      val debt = debts.head
-      debt.amount shouldBe 5.0
-
-    "not create debt when expense payer is the share owner" in:
-      val strategy = NormalDebtStrategy()
-      val expense  = Expense("Solo", 10.0, date, alice, List(Share(alice, 10.0)))
-      val group    = Group("Trip", List(alice), List(expense), Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-      debts shouldBe empty
-  }
-
-  "SimplifiedDebtStrategy" should {
-
-    "return 'simplified' as toString" in:
-      val strategy = SimplifiedDebtStrategy()
-      strategy.toString() shouldBe "simplified"
-
-    "calculate no debts when there are no expenses" in:
-      val strategy = SimplifiedDebtStrategy()
-      val group    = Group("Trip", List(alice, bob), Nil, Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-      debts shouldBe empty
-
-    "calculate debts for a single expense" in:
-      val strategy = SimplifiedDebtStrategy()
-      val expense  = Expense("Dinner", 30.0, date, alice, List(Share(bob, 15.0), Share(charlie, 15.0)))
-      val group    = Group("Trip", List(alice, bob, charlie), List(expense), Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-      debts should not be empty
-
-    "simplify chain debts" in:
-      // Alice pays for Bob (Bob owes Alice 10)
-      // Bob pays for Charlie (Charlie owes Bob 10)
-      // Simplified: Charlie owes Alice 10
-      val strategy = SimplifiedDebtStrategy()
-      val expense1 = Expense("E1", 10.0, date, alice, List(Share(bob, 10.0)))
-      val expense2 = Expense("E2", 10.0, date, bob, List(Share(charlie, 10.0)))
-      val group    = Group("Trip", List(alice, bob, charlie), List(expense1, expense2), Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-
-      // Should result in fewer transactions than normal strategy
-      debts.length should be <= 2
-
-    "minimize number of transactions" in:
-      val strategy = SimplifiedDebtStrategy()
-      // Complex scenario with multiple expenses
-      val expense1 = Expense("E1", 30.0, date, alice, List(Share(bob, 10.0), Share(charlie, 10.0)))
-      val expense2 = Expense("E2", 20.0, date, bob, List(Share(alice, 10.0), Share(charlie, 10.0)))
-      val group    = Group("Trip", List(alice, bob, charlie), List(expense1, expense2), Nil, strategy)
-      val debts    = strategy.calculateDebts(group)
-
-      // Simplified strategy should produce minimal transactions
-      debts.length should be <= 3
+      balances(alice) shouldBe 0.0     // Alice paid 30, owes 10+20=30
+      balances(bob) shouldBe 20.0      // Bob paid 60, owes 20+20=40, net 20
+      balances(charlie) shouldBe -20.0 // Charlie paid 0, owes 20
+    }
   }

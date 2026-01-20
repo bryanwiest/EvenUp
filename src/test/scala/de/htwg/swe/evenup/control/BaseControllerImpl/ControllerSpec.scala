@@ -29,7 +29,6 @@ class ControllerSpec extends AnyWordSpec with Matchers:
     var lastEvent: Option[ObservableEvent]   = None
     def update(event: ObservableEvent): Unit = lastEvent = Some(event)
 
-  // Use the default givens which loads from file
   def createController(): Controller = new Controller
 
   "Controller" should {
@@ -49,11 +48,9 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       val observer   = new TestObserver
       controller.add(observer)
 
-      // First add a unique group
       val uniqueName = s"DuplicateTest_${System.currentTimeMillis}"
       controller.addGroup(uniqueName)
 
-      // Try to add the same group again
       controller.addGroup(uniqueName)
 
       observer.lastEvent.get match
@@ -65,7 +62,6 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       val observer   = new TestObserver
       controller.add(observer)
 
-      // Vacation exists in the data file
       controller.gotoGroup("Vacation")
 
       controller.app.active_group should not be empty
@@ -110,7 +106,6 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       controller.add(observer)
 
       controller.gotoGroup("Vacation")
-      // Bryan exists in Vacation group
       controller.addUserToGroup("Bryan")
 
       observer.lastEvent.get match
@@ -122,7 +117,6 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       val observer   = new TestObserver
       controller.add(observer)
 
-      // Make sure we're in main menu
       controller.gotoMainMenu
       controller.addUserToGroup("TestUser")
 
@@ -152,6 +146,65 @@ class ControllerSpec extends AnyWordSpec with Matchers:
       observer.lastEvent.get match
         case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.NoActiveGroup
         case _                                          => fail("Expected AddExpenseToGroup response")
+
+    "fail to add expense with payer not in group" in:
+      val controller = createController()
+      val observer   = new TestObserver
+      controller.add(observer)
+
+      controller.gotoGroup("Vacation")
+      controller.addExpenseToGroup("Dinner", "NonExistentUser", 50.0, date, None)
+
+      observer.lastEvent.get match
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.PaidByNotFound
+        case _                                          => fail("Expected AddExpenseToGroup response")
+
+    "fail to add expense with invalid amount" in:
+      val controller = createController()
+      val observer   = new TestObserver
+      controller.add(observer)
+
+      controller.gotoGroup("Vacation")
+      controller.addExpenseToGroup("Dinner", "Bryan", 0.0, date, None)
+
+      observer.lastEvent.get match
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.InvalidAmount
+        case _                                          => fail("Expected AddExpenseToGroup response")
+
+    "fail to add expense with negative amount" in:
+      val controller = createController()
+      val observer   = new TestObserver
+      controller.add(observer)
+
+      controller.gotoGroup("Vacation")
+      controller.addExpenseToGroup("Dinner", "Bryan", -10.0, date, None)
+
+      observer.lastEvent.get match
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.InvalidAmount
+        case _                                          => fail("Expected AddExpenseToGroup response")
+
+    "fail to add expense with shares person not in group" in:
+      val controller = createController()
+      val observer   = new TestObserver
+      controller.add(observer)
+
+      controller.gotoGroup("Vacation")
+      controller.addExpenseToGroup("Dinner", "Bryan", 50.0, date, Some("NonExistent:50"))
+
+      observer.lastEvent.get match
+        case EventResponse.AddExpenseToGroup(result, _) => result shouldBe AddExpenseToGroupResult.SharesPersonNotFound
+        case _                                          => fail("Expected AddExpenseToGroup response")
+
+    "fail to add expense with shares sum mismatch" in:
+      val controller = createController()
+      val observer   = new TestObserver
+      controller.add(observer)
+
+      controller.gotoGroup("Vacation")
+      val expenseCount = controller.app.active_group.get.expenses.length
+      controller.addExpenseToGroup("Dinner", "Bryan", 50.0, date, Some("Bryan:30_Jonas:10"))
+
+      controller.app.active_group.get.expenses.length shouldBe expenseCount
 
     "set debt strategy" in:
       val controller = createController()

@@ -53,6 +53,11 @@ class ArgsHandlerSpec extends AnyWordSpec with Matchers:
       val handler = AddGroupHandler(None)
       val result  = handler.check(Map("operation" -> "other"), appWithGroup)
       result shouldBe EventResponse.NextHandler
+
+    "return UncoveredFailure for missing group_name" in:
+      val handler = AddGroupHandler(None)
+      val result  = handler.check(Map("operation" -> "addGroup"), appWithGroup)
+      result shouldBe a[EventResponse.UncoveredFailure]
   }
 
   "GotoGroupHandler" should {
@@ -77,6 +82,11 @@ class ArgsHandlerSpec extends AnyWordSpec with Matchers:
       val handler = GotoGroupHandler(None)
       val result  = handler.check(Map("operation" -> "other"), appWithGroup)
       result shouldBe EventResponse.NextHandler
+
+    "return UncoveredFailure for missing group_name" in:
+      val handler = GotoGroupHandler(None)
+      val result  = handler.check(Map("operation" -> "gotoGroup"), appWithGroup)
+      result shouldBe a[EventResponse.UncoveredFailure]
   }
 
   "AddUserToGroupHandler" should {
@@ -100,6 +110,11 @@ class ArgsHandlerSpec extends AnyWordSpec with Matchers:
       val handler = AddUserToGroupHandler(None)
       val result  = handler.check(Map("operation" -> "other"), appWithGroup)
       result shouldBe EventResponse.NextHandler
+
+    "return UncoveredFailure for missing user_name" in:
+      val handler = AddUserToGroupHandler(None)
+      val result  = handler.check(Map("operation" -> "addUserToGroup"), appWithActiveGroup)
+      result shouldBe a[EventResponse.UncoveredFailure]
   }
 
   "UndoRedoHandler" should {
@@ -130,6 +145,16 @@ class ArgsHandlerSpec extends AnyWordSpec with Matchers:
       val handler = UndoRedoHandler(None)
       val result  = handler.check(Map("operation" -> "other"), appWithGroup)
       result shouldBe EventResponse.NextHandler
+
+    "return UncoveredFailure for missing stack size in undo" in:
+      val handler = UndoRedoHandler(None)
+      val result  = handler.check(Map("operation" -> "undo"), appWithGroup)
+      result shouldBe a[EventResponse.UncoveredFailure]
+
+    "return UncoveredFailure for missing stack size in redo" in:
+      val handler = UndoRedoHandler(None)
+      val result  = handler.check(Map("operation" -> "redo"), appWithGroup)
+      result shouldBe a[EventResponse.UncoveredFailure]
   }
 
   "AddExpenseToGroupHandler" should {
@@ -204,6 +229,43 @@ class ArgsHandlerSpec extends AnyWordSpec with Matchers:
       val handler = AddExpenseToGroupHandler(None)
       val result  = handler.check(Map("operation" -> "other"), appWithGroup)
       result shouldBe EventResponse.NextHandler
+
+    "return UncoveredFailure when missing required arguments" in:
+      val handler = AddExpenseToGroupHandler(None)
+      val result  = handler.check(
+        Map("operation" -> "addExpenseToGroup", "expense_name" -> "Test"),
+        appWithActiveGroup
+      )
+      result shouldBe a[EventResponse.UncoveredFailure]
+
+    "return SharesSumWrong when shares don't sum to amount" in:
+      val handler = AddExpenseToGroupHandler(None)
+      val result  = handler.check(
+        Map(
+          "operation"    -> "addExpenseToGroup",
+          "expense_name" -> "Dinner",
+          "paid_by"      -> "Alice",
+          "amount"       -> 30.0,
+          "shares"       -> Some("Alice:10_Bob:10")
+        ),
+        appWithActiveGroup
+      )
+      result.asInstanceOf[EventResponse.AddExpenseToGroup].result shouldBe AddExpenseToGroupResult.SharesSumWrong
+
+    "handle shares with rounding correctly" in:
+      val handler = AddExpenseToGroupHandler(None)
+      val result  = handler.check(
+        Map(
+          "operation"    -> "addExpenseToGroup",
+          "expense_name" -> "Dinner",
+          "paid_by"      -> "Alice",
+          "amount"       -> 30.01,
+          "shares"       -> Some("Alice:15.00_Bob:15.00")
+        ),
+        appWithActiveGroup
+      )
+      // Should fail due to 0.01 difference (outside tolerance)
+      result.asInstanceOf[EventResponse.AddExpenseToGroup].result shouldBe AddExpenseToGroupResult.SharesSumWrong
   }
 
   "SetDebtStrategyHandler" should {
@@ -229,6 +291,14 @@ class ArgsHandlerSpec extends AnyWordSpec with Matchers:
       val handler = SetDebtStrategyHandler(None)
       val result  = handler.check(Map("operation" -> "other"), appWithGroup)
       result shouldBe EventResponse.NextHandler
+
+    "return UncoveredFailure for unknown strategy" in:
+      val handler = SetDebtStrategyHandler(None)
+      val result  = handler.check(
+        Map("operation" -> "setDebtStrategy", "strategy" -> "unknown_strategy"),
+        appWithActiveGroup
+      )
+      result shouldBe a[EventResponse.UncoveredFailure]
   }
 
   "CalculateDebtsHandler" should {

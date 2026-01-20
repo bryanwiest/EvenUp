@@ -86,6 +86,31 @@ class ParserSpec extends AnyWordSpec with Matchers:
     "fail for unknown command" in:
       val result = parser.parseInput("unknown")
       result shouldBe a[Failure[?]]
+
+    "parse addExpense command with valid shares" in:
+      val result = parser.parseInput(":addexp Dinner Alice 30 Alice:15_Bob:15 2025-06-15")
+      result shouldBe a[Success[?]]
+      result.get.head shouldBe ":addexp"
+
+    "fail addExpense command with invalid shares format" in:
+      val result = parser.parseInput(":addexp Dinner Alice 30 invalid_format 2025-06-15")
+      result shouldBe a[Failure[?]]
+      result.failed.get.getMessage should include("Invalid format")
+
+    "fail addExpense command with empty person in shares" in:
+      val result = parser.parseInput(":addexp Dinner Alice 30 :15 2025-06-15")
+      result shouldBe a[Failure[?]]
+      result.failed.get.getMessage should include("Empty person name")
+
+    "fail addExpense command with invalid amount in shares" in:
+      val result = parser.parseInput(":addexp Dinner Alice 30 Alice:abc 2025-06-15")
+      result shouldBe a[Failure[?]]
+      result.failed.get.getMessage should include("Invalid amount")
+
+    "fail addExpense command with negative amount in shares" in:
+      val result = parser.parseInput(":addexp Dinner Alice 30 Alice:-10 2025-06-15")
+      result shouldBe a[Failure[?]]
+      result.failed.get.getMessage should include("Negative amount")
   }
 
   "Parser.validSharePattern" should {
