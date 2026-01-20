@@ -53,6 +53,18 @@ class ShareParserSpec extends AnyWordSpec with Matchers:
       val result = ShareParser.parseShares("Alice:-10")
       result shouldBe a[Left[?, ?]]
       result.swap.toOption.get shouldBe a[ShareParser.ParseError.NegativeAmount]
+
+    "handle whitespace in person names" in:
+      val result = ShareParser.parseShares(" Alice :10")
+      result shouldBe a[Right[?, ?]]
+      val shares = result.toOption.get
+      shares.head.person.name shouldBe "Alice"
+
+    "handle whitespace in amounts" in:
+      val result = ShareParser.parseShares("Alice: 10.50 ")
+      result shouldBe a[Right[?, ?]]
+      val shares = result.toOption.get
+      shares.head.amount shouldBe 10.50
   }
 
   "ShareParser.validateShareSum" should {
@@ -72,6 +84,16 @@ class ShareParserSpec extends AnyWordSpec with Matchers:
       val result = ShareParser.validateShareSum(shares, 50.0)
       result shouldBe a[Left[?, ?]]
       result.swap.toOption.get shouldBe a[ShareParser.ParseError.ShareSumMismatch]
+
+    "handle exact boundary" in:
+      val shares = List(Share(Person("Alice"), 10.01))
+      val result = ShareParser.validateShareSum(shares, 10.0, 0.01)
+      result shouldBe a[Right[?, ?]]
+
+    "fail just outside tolerance" in:
+      val shares = List(Share(Person("Alice"), 10.02))
+      val result = ShareParser.validateShareSum(shares, 10.0, 0.01)
+      result shouldBe a[Left[?, ?]]
   }
 
   "ShareParser.validatePersonsInGroup" should {
